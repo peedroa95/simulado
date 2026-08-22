@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulado 01 · PPRN · Projeto Caveira</title>
+<style>
+:root{
+  --bg:#0e1210;
+  --bg2:#141914;
+  --panel:#191f1c;
+  --line:#2a332c;
+  --ink:#e8ece6;
+  --ink-dim:#9aa79c;
+  --amber:#d8a13a;
+  --amber-dim:#8a6b2c;
+  --red:#c1462f;
+  --green:#5c9a5f;
+  --mono: 'Courier New', ui-monospace, monospace;
+  --disp: 'Arial Black', 'Helvetica Neue', sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;}
+body{
+  background-image:
+    radial-gradient(circle at 15% 8%, rgba(216,161,58,0.05), transparent 40%),
+    repeating-linear-gradient(135deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 6px);
+}
+.wrap{max-width:820px;margin:0 auto;padding:0 18px 80px;}
+
+/* HEADER */
+.hdr{
+  padding:34px 18px 22px;
+  border-bottom:2px solid var(--amber-dim);
+  position:sticky; top:0; z-index:50;
+  background:linear-gradient(180deg, var(--bg) 70%, rgba(14,18,16,0.96));
+  backdrop-filter:blur(4px);
+}
+.hdr-inner{max-width:820px;margin:0 auto;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;}
+.brand{display:flex;align-items:center;gap:12px;}
+.skull{width:34px;height:34px;flex-shrink:0;}
+.brand-text .eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--amber);text-transform:uppercase;}
+.brand-text h1{font-family:var(--disp);font-size:22px;letter-spacing:1px;margin:2px 0 0;color:var(--ink);text-transform:uppercase;}
+.progress-box{font-family:var(--mono);font-size:12px;color:var(--ink-dim);text-align:right;}
+.progress-box b{color:var(--amber);font-size:16px;}
+.bar{width:180px;height:5px;background:var(--line);margin-top:6px;border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;background:var(--amber);width:0%;transition:width .3s;}
+
+/* NAV / QUOTE */
+.quote{
+  font-style:italic;color:var(--ink-dim);font-size:14px;text-align:center;
+  padding:18px 24px 0; max-width:520px;margin:0 auto;
+}
+.quote span{display:block;font-family:var(--mono);font-style:normal;font-size:10px;letter-spacing:2px;margin-top:6px;color:var(--amber-dim);text-transform:uppercase;}
+
+/* SUBJECT DIVIDER */
+.subject-div{
+  margin:44px 0 22px; display:flex;align-items:center;gap:14px;
+}
+.subject-div .line{flex:1;height:1px;background:var(--line);}
+.subject-div .label{
+  font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;
+  color:var(--amber);white-space:nowrap;padding:4px 10px;border:1px solid var(--amber-dim);
+}
+
+/* TEXT PASSAGE */
+.passage{
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--amber-dim);
+  padding:22px 24px;margin:0 0 26px;font-size:15.5px;line-height:1.75;color:#d6dbd2;
+}
+.passage h3{font-family:var(--disp);font-size:17px;margin:0 0 2px;color:var(--ink);letter-spacing:.5px;}
+.passage .author{font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-bottom:14px;display:block;}
+.passage p{margin:0 0 14px;}
+.passage p:last-child{margin-bottom:0;}
+.passage .src{font-size:11px;color:var(--ink-dim);font-family:var(--mono);margin-top:10px;}
+
+/* QUESTION CARD */
+.q{
+  background:var(--panel);border:1px solid var(--line);
+  margin-bottom:16px; position:relative; transition:border-color .2s;
+}
+.q.answered{border-color:#39433b;}
+.q-head{
+  display:flex; gap:14px; align-items:flex-start; padding:18px 20px 14px;
+}
+.q-num{
+  font-family:var(--mono); font-size:13px; color:var(--amber); border:1px solid var(--amber-dim);
+  min-width:38px; height:38px; display:flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.q-text{font-size:15.5px; line-height:1.6; padding-top:2px;}
+.q-text b{color:var(--ink);}
+.opts{padding:0 20px 18px 72px; display:flex; flex-direction:column; gap:8px;}
+.opt{
+  display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border:1px solid var(--line);
+  cursor:pointer; font-size:14.5px; line-height:1.5; background:var(--bg2); transition:all .12s;
+}
+.opt:hover{border-color:var(--amber-dim); background:#1c231e;}
+.opt .letter{
+  font-family:var(--mono); font-weight:bold; color:var(--ink-dim); min-width:18px;
+}
+.opt.selected{border-color:var(--amber); background:rgba(216,161,58,0.09);}
+.opt.selected .letter{color:var(--amber);}
+
+/* answered / graded states */
+.opt.correct-answer{border-color:var(--green); background:rgba(92,154,95,0.12);}
+.opt.correct-answer .letter{color:var(--green);}
+.opt.wrong-answer{border-color:var(--red); background:rgba(193,70,47,0.12);}
+.opt.wrong-answer .letter{color:var(--red);}
+.opt.disabled{cursor:default;}
+
+.q-status{
+  font-family:var(--mono); font-size:10px; letter-spacing:1.5px; text-transform:uppercase;
+  padding:4px 20px; color:var(--ink-dim);
+}
+.q.correct .q-status{color:var(--green);}
+.q.incorrect .q-status{color:var(--red);}
+
+.explain{
+  margin:0 20px 18px 72px; padding:14px 16px; background:#12160f; border-left:2px solid var(--amber-dim);
+  font-size:13.5px; line-height:1.65; color:#c7ccc2; display:none;
+}
+.explain.show{display:block;}
+.explain b{color:var(--amber);}
+
+/* FOOTER / SUBMIT */
+.submit-zone{
+  position:sticky; bottom:0; padding:16px 0; margin-top:30px;
+  background:linear-gradient(0deg, var(--bg) 60%, rgba(14,18,16,0));
+}
+.submit-btn{
+  width:100%; padding:16px; background:var(--amber); color:#151810; border:none;
+  font-family:var(--disp); font-size:15px; letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer; transition:background .15s;
+}
+.submit-btn:hover{background:#e8b654;}
+.submit-btn:disabled{background:var(--line); color:var(--ink-dim); cursor:not-allowed;}
+
+/* RESULT SCREEN */
+.result{
+  display:none; text-align:center; padding:50px 20px 20px;
+}
+.result.show{display:block;}
+.result .grade{font-family:var(--disp); font-size:64px; color:var(--amber); letter-spacing:2px;}
+.result .grade small{font-size:22px; color:var(--ink-dim); font-family:var(--mono);}
+.result .sub{font-family:var(--mono); font-size:12px; color:var(--ink-dim); letter-spacing:2px; text-transform:uppercase; margin-top:6px;}
+.stat-row{display:flex; justify-content:center; gap:28px; margin:26px 0 8px; flex-wrap:wrap;}
+.stat{font-family:var(--mono); text-align:center;}
+.stat b{display:block; font-size:26px;}
+.stat.acertos b{color:var(--green);}
+.stat.erros b{color:var(--red);}
+.stat.brancos b{color:var(--ink-dim);}
+.stat span{font-size:10px; letter-spacing:1.5px; color:var(--ink-dim); text-transform:uppercase;}
+
+.subject-breakdown{max-width:520px;margin:34px auto 10px; text-align:left;}
+.sb-row{display:flex; align-items:center; gap:10px; margin-bottom:10px; font-family:var(--mono); font-size:11.5px;}
+.sb-name{width:200px; flex-shrink:0; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.5px;}
+.sb-bar{flex:1; height:8px; background:var(--line); position:relative;}
+.sb-fill{height:100%; background:var(--green);}
+.sb-frac{width:44px; text-align:right; color:var(--ink-dim); flex-shrink:0;}
+
+.review-btn, .reset-btn{
+  font-family:var(--mono); font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
+  background:none; border:1px solid var(--amber-dim); color:var(--amber); padding:10px 20px;
+  cursor:pointer; margin:24px 8px 0;
+}
+.review-btn:hover, .reset-btn:hover{background:rgba(216,161,58,0.1);}
+
+.filter-bar{
+  display:none; gap:8px; padding:16px 0; flex-wrap:wrap; justify-content:center;
+  border-bottom:1px solid var(--line); margin-bottom:20px; position:sticky; top:88px; z-index:40;
+  background:var(--bg);
+}
+.filter-bar.show{display:flex;}
+.chip{
+  font-family:var(--mono); font-size:11px; letter-spacing:1px; padding:6px 12px; border:1px solid var(--line);
+  color:var(--ink-dim); cursor:pointer; text-transform:uppercase;
+}
+.chip.active{border-color:var(--amber); color:var(--amber);}
+
+.hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="brand">
+      <svg class="skull" viewBox="0 0 100 100" fill="none">
+        <path d="M50 8C28 8 14 24 14 44c0 14 6 22 12 28l2 14c0 3 2 5 5 5h6v-8h4v8h8v-8h4v8h6c3 0 5-2 5-5l2-14c6-6 12-14 12-28C86 24 72 8 50 8z" stroke="#d8a13a" stroke-width="2.5" fill="none"/>
+        <circle cx="34" cy="42" r="7" fill="#d8a13a"/>
+        <circle cx="66" cy="42" r="7" fill="#d8a13a"/>
+        <path d="M50 50v10M44 66h12" stroke="#d8a13a" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text">
+        <div class="eyebrow">Polícia Penal do RN · Pós-edital</div>
+        <h1>Simulado 01</h1>
+      </div>
+    </div>
+    <div class="progress-box">
+      <b id="progCount">0</b> / 100 respondidas
+      <div class="bar"><div class="bar-fill" id="progBar"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="quote">"O número de erros não importa, você só precisa acertar uma vez."<span>Fernando Alonso</span></div>
+
+  <div class="filter-bar" id="filterBar"></div>
+  <div id="quizRoot"></div>
+
+  <div class="submit-zone" id="submitZone">
+    <button class="submit-btn" id="submitBtn">Corrigir simulado</button>
+  </div>
+
+  <div class="result" id="resultScreen">
+    <div class="sub">Resultado final</div>
+    <div class="grade"><span id="scorePct">0</span><small>%</small></div>
+    <div class="sub" id="scoreNote"></div>
+    <div class="stat-row">
+      <div class="stat acertos"><b id="statAcertos">0</b><span>Acertos</span></div>
+      <div class="stat erros"><b id="statErros">0</b><span>Erros</span></div>
+      <div class="stat brancos"><b id="statBrancos">0</b><span>Em branco</span></div>
+    </div>
+    <div class="subject-breakdown" id="subjectBreakdown"></div>
+    <div>
+      <button class="review-btn" id="reviewBtn">Ver correções</button>
+      <button class="reset-btn" id="resetBtn">Refazer simulado</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const PASSAGE = {
+  title: "Montanha", author: "Rachel de Queiroz",
+  html: `<p>Há homens do mar e homens do rio, homens da terra plana e homens da montanha, tão diversos uns dos outros como se fossem de raças diferentes. Nativa da praia e da caatinga, confesso que, por mim, tenho medo de montanha. Tão altas, tão brutas, com suas rampas de pedra inacessíveis, e até a beleza dos vales lá embaixo é rodeada pela traição dos despenhadeiros.</p>
+  <p>Não é a cidade, nem as fábricas, nem nenhuma das formas do progresso mecânico que mais me demonstram o atrevimento do homem; é a montanha. Está um homenzinho cá ao pé da montanha, na planície, munido apenas das suas duas pernas, e lá no alto a vê torrear os monstros, ásperos e verdes, vê os precipícios temerosos, vê azular de encontro às nuvens os picos altíssimos. Pois se vai ele, abandonando a sua planura e a sua segurança, abrindo trilha no flanco do gigante, e escala as serras, e escolhe local de pouso e moradia, e desvenda os mistérios de entre os montes, e aceita como destino e meio de vida o eterno sobe e desce de ladeiras, e faz dos precipícios o seu cotidiano. E vive feliz, e atrai outros atrevidos para o seu lado – e quando se vê está constituído todo um povo de montanheses – fato, afinal, tão admirável quanto se de nossa espécie se constituísse de repente um povo de anfíbios...</p>
+  <p>Vê-se, pois, que foi exagero euclidiano dizer que o sertanejo é que é antes de tudo um forte. Qual, o sertanejo é principalmente um sofredor. É o fatalista, que recebe como lhe caem por cima as pragas e as poucas bênçãos do destino; enquanto o montanhês é o agressivo, o domador da fera. O sertanejo foi se chegando aos poucos – cada dia, cada ano, caminhava mais uma légua, seguindo no rastro do boi; enquanto o candidato a montanhês teve necessariamente o seu momento de decisão, na hora em que se resolve a enfrentar o salto que o levará cá da planície às altitudes da serra, e, através da trilha difícil que ele mesmo tem que construir, marcar o seu lugar numa riba de cordilheira, nele se empoleirar e de lá olhar o mundo como um vitorioso.</p>
+  <p>Isto não é um apólogo. Será quando muito um débil aviso de perigo. Durante anos e anos tivemos o domínio dos homens do planalto e não se deve confundir planalto com montanha; os do planalto só têm da montanha as vantagens, que é a altitude sem a aspereza de picos e morros. O planalto faz trabalhadores e aristocratas, não forja guerrilheiros. Depois subiram os do pampa, a planície por definição. Ficaram também muito tempo – tanto tempo que tem sido difícil desalojá-los, e para os contentar ainda foi preciso entregar-lhes um bom quinhão dos despojos. (...)</p>
+  <div class="src">Disponível em: cronicabrasileira.org.br/cronicas/9252/montanha. Acesso em jul. 2026.</div>`
+};
+
+// each question: {n, subj, passage(bool), text, opts:[...], correct:'B', exp}
+const Q = [
+{n:1,subj:"Língua Portuguesa",passage:true,text:'Assinale a alternativa cuja afirmação condiz com o conteúdo apresentado no texto "Montanha".',
+ opts:["Os animais anfíbios surgiram da mesma forma que os homens montanhistas, entre aqueles que se acomodam com o mesmo modo de vida.",
+ "Os montanhistas são uma espécie de homens à parte, diferentes dos demais; são arrojados, aventureiros, não se contentam com a mesmice das coisas.",
+ "A montanha forma aristocratas que desafiam os limites, enquanto a planície forma guerrilheiros calmos, tranquilos, que lutam pela paz.",
+ "Todos os homens são iguais entre si; a única coisa que os diferencia é se vivem nas grandes capitais ou nas cidades do interior.",
+ "O atrevimento dos homens se faz sentir em todos os lugares: nas cidades, nas fábricas, nos campos, nos pampas, nas caatingas."],
+ correct:1, exp:"A autora caracteriza os montanheses como ousados e distintos do restante dos homens ('o montanhês é o agressivo, o domador da fera'). É o contrário do texto que o planalto forma guerrilheiros (na verdade forma trabalhadores/aristocratas) e a autora nega explicitamente que o atrevimento se manifeste em toda parte."},
+
+{n:2,subj:"Língua Portuguesa",passage:true,text:'Em relação ao seu tipo e gênero, o texto "Montanha" se enquadra como:',
+ opts:["Conto jornalístico, do tipo narrativo, com personagens planos (homens comuns) e redondos (montanhistas).",
+ "Conto jornalístico, do tipo descritivo, com apresentação de características dos montanhistas.",
+ "Crônica jornalística, do tipo narrativa, em que a autora conta fatos e apresenta personagens bem específicos.",
+ "Crônica objetiva, do tipo dissertativa, em que a autora desenvolve uma visão científica sobre o tema.",
+ "Crônica subjetiva, do tipo dissertativa, em que a autora desenvolve uma visão pessoal sobre o tema."],
+ correct:4, exp:"É crônica (não conto), e desde a primeira linha a autora marca opinião pessoal ('confesso que, por mim, tenho medo'), sustentando uma tese por meio de comparações — predominância dissertativa e subjetiva."},
+
+{n:3,subj:"Língua Portuguesa",passage:true,text:'Em "para os contentar ainda foi preciso entregar-lhes um bom quinhão dos despojos", a palavra destacada significa:',
+ opts:["Os bens pessoais que os antigos governantes abandonaram ao deixar o poder.",
+ "Os prejuízos materiais provocados pelas disputas entre os diferentes grupos políticos.",
+ "A parcela de cargos, privilégios, influência e demais vantagens decorrentes da conquista e do exercício do poder.",
+ "Os documentos e registros administrativos pertencentes ao governo anterior.",
+ "Os recursos naturais existentes no território administrado pelos grupos políticos mencionados."],
+ correct:2, exp:"'Despojos', em sentido figurado, designa as vantagens/benefícios repartidos entre quem exerce o poder — cargos, privilégios, influência."},
+
+{n:4,subj:"Língua Portuguesa",passage:true,text:"Considerando as regras de ortografia que regem o sistema de escrita da língua portuguesa brasileira, assinale a alternativa cujas formas completam, respectiva e adequadamente, as lacunas pontilhadas no texto.",
+ opts:["Confesso - embaixo - de repente - aspereza.","Confeço - em baixo - derepente - asperesa.","Confeço - embaixo - de repente - asperesa.","Confesso - em baixo - derrepente - aspereza.","Confesso - embaixo - de repente - asperesa."],
+ correct:0, exp:"Confesso (com SS, de 'confessar'); embaixo junto (advérbio de lugar); de repente sempre separado; aspereza com Z (sufixo -eza)."},
+
+{n:5,subj:"Língua Portuguesa",passage:true,text:'Em "Vê-se, pois, que foi exagero euclidiano dizer que o sertanejo é que é antes de tudo um forte", o termo destacado estabelece relação lógico-discursiva de:',
+ opts:["Explicação.","Conclusão.","Causa.","Consequência.","Conformação."],
+ correct:1, exp:"'Pois' posicionado depois do verbo e intercalado por vírgulas tem valor conclusivo (diferente do 'pois' causal, que vem antes do verbo, sem vírgula)."},
+
+{n:6,subj:"Língua Portuguesa",passage:true,text:'Em "Nativa da praia e da caatinga, confesso que, por mim, tenho medo de montanha", a expressão destacada é:',
+ opts:["Adjunto adnominal.","Adjunto adverbial.","Objeto indireto.","Agente da passiva.","Complemento nominal."],
+ correct:4, exp:"'de montanha' completa o substantivo abstrato passivo 'medo' (deriva de sentimento) — complemento nominal."},
+
+{n:7,subj:"Língua Portuguesa",passage:true,text:"Em qual dos trechos do texto há a presença de um fator de intertextualidade?",
+ opts:['"Vê-se, pois, que foi exagero euclidiano dizer que o sertanejo é que é antes de tudo um forte."',
+ '"[...] para os contentar ainda foi preciso entregar-lhes um bom quinhão dos despojos."',
+ '"Há homens do mar e homens do rio, homens da terra plana e homens da montanha."',
+ '"[...] e escolhe local de pouso e moradia, e desvenda os mistérios de entre os montes."',
+ '"E vive feliz, e atrai outros atrevidos para o seu lado – e quando se vê está constituído todo um povo de montanheses."'],
+ correct:0, exp:"A autora dialoga diretamente com a frase de Euclides da Cunha em Os Sertões ('O sertanejo é, antes de tudo, um forte'), contestando-a."},
+
+{n:8,subj:"Língua Portuguesa",passage:true,text:'Da mesma forma em que o acento indicativo de crase está correto em "vê azular de encontro às nuvens os picos altíssimos", assinale a alternativa cujo acento grave está adequado:',
+ opts:["O autor afirma que prefere a planície à enfrentar as montanhas, por considerá-las perigosas.","Os montanheses acostumam-se à viver entre precipícios e ladeiras desde muito cedo.","O narrador compara o sertanejo à um sofredor resignado diante das adversidades da vida.","O texto mostra que os homens do planalto conservam apenas a altitude, sem à aspereza dos picos e morros.","O montanhês sobe à serra decidido a enfrentar os obstáculos e construir seu próprio caminho."],
+ correct:4, exp:"'à serra' é adjunto adverbial de lugar feminino — crase obrigatória. As demais têm crase diante de verbo, artigo indefinido masculino ou pronome, o que é proibido."},
+
+{n:9,subj:"Língua Portuguesa",passage:true,text:"Considere as frases a seguir, elaboradas a partir do texto. Assinale a alternativa em que a colocação pronominal está de acordo com a norma-padrão da língua portuguesa:",
+ opts:["Se assustou o narrador com a grandiosidade da paisagem quando viu os picos da montanha.","O autor afirma que se vê constituído todo um povo de montanheses.","Os montanheses tinham preparado-se para enfrentar as dificuldades do terreno.","Talvez construiriam-lhe uma trilha mais segura caso houvesse mais recursos.","O sertanejo jamais arrepende-se de seguir o rastro do boi pelas planícies."],
+ correct:1, exp:"A conjunção integrante 'que' atrai o pronome para próclise obrigatória: 'que se vê constituído'."},
+
+{n:10,subj:"Língua Portuguesa",passage:true,text:'Considerando o processo de formação da palavra destacada em "não se deve confundir planalto com montanha", a alternativa cujo termo é formado pelo mesmo processo é:',
+ opts:["Cinematográfico.","Malmequer.","Hercúleo.","Fidalgo.","Sociologia."],
+ correct:3, exp:"'Planalto' (plano+alto, com perda de letra) e 'fidalgo' (filho+de+algo, com perda de letras) são compostos por aglutinação."},
+
+{n:11,subj:"Língua Portuguesa",passage:false,text:'"O texto é uma máquina preguiçosa que(1) exige que(2) os leitores façam a sua parte." (Umberto Eco)<br><br>Considere as afirmativas a seguir, preenchendo as lacunas com 1 ou 2: introduz oração objetiva direta / introduz oração de valor adjetivo / é palavra de natureza pronominal / é palavra de natureza conjuntiva / exerce a função de sujeito.',
+ opts:["1 – 2 – 2 – 1 – 1.","1 – 2 – 2 – 1 – 2.","2 – 1 – 2 – 1 – 2.","2 – 1 – 1 – 2 – 2.","2 – 1 – 1 – 2 – 1."],
+ correct:4, exp:"'Que(1)' é pronome relativo (antecedido de substantivo 'máquina'), introduz oração adjetiva, e é sujeito de 'exige'. 'Que(2)' é conjunção integrante, introduz objetiva direta."},
+
+{n:12,subj:"Língua Portuguesa",passage:false,text:"Assinale a alternativa em que a forma verbal apresentada entre parênteses substitui corretamente a palavra destacada no enunciado.",
+ opts:["Qual de nós chegará mais cedo para a arrumação da festa? (chegaremos)","A lista completa de todos os direitos e obrigações dos cidadãos chegou ontem. (chegaram)",'"Escrever consiste em levar ideias a extremos para vê-las fracassar." – Alejandro Zambra (fracassarem)',"Vejo que algum de vocês, em plena consciência das faculdades mentais, saiu em disparada ontem. (saíram)",'"A principal necessidade de nossas vidas é alguém que nos obrigue a fazer o que podemos fazer." – Ralph Waldo Emerson (obriguem)'],
+ correct:2, exp:"Na estrutura 'levar algo a + infinitivo' com sujeito expresso no plural ('ideias'), o infinitivo pode ficar flexionado: 'vê-las fracassarem' também é correto."},
+
+{n:13,subj:"Língua Portuguesa",passage:false,text:'"Quando eu alertei os turistas, os ladrões já tinham surrupiado os seus pertences. Da próxima vez, vou procurar me antecipar, como têm feito alguns guardas municipais." Assinale a alternativa que apresenta, na mesma ordem, o tempo verbal das formas destacadas, seguido do sentido de cada uma.',
+ opts:["Pretérito mais-que-perfeito composto – ação passada posterior a outra também passada; pretérito perfeito composto – ação projetada para futuro próximo.","Futuro do presente composto – ...; futuro do pretérito composto – ...","Pretérito perfeito composto – ação projetada para futuro próximo; pretérito mais-que-perfeito composto – ação passada posterior a outra também passada.","Pretérito mais-que-perfeito composto – ação passada anterior a outra também passada; pretérito perfeito composto – ação repetitiva que começou no passado e continua até o presente.","Pretérito imperfeito composto – ação passada anterior a outra também passada; presente composto – ação repetitiva até o presente."],
+ correct:3, exp:"'Tinham surrupiado' = pretérito mais-que-perfeito composto (ação anterior a outra passada). 'Têm feito' = pretérito perfeito composto (ação repetida, iniciada no passado e que continua)."},
+
+{n:14,subj:"Língua Portuguesa",passage:false,text:'Preencha as lacunas e assinale a alternativa correta: "Você só seria atendido novamente se ______ uma nova avaliação do processo e ______ o seu direito. Quando ______ isso, tudo vai ser resolvido."',
+ opts:["Requeresse / reouvesse / fizer.","Requisesse / reouvesse / fizer.","Requeresse / reavesse / fizer.","Requisesse / reavesse / fazer.","Requeresse / reouvesse / fazer."],
+ correct:0, exp:"'Se' pede pretérito imperfeito do subjuntivo: requeresse, reouvesse (de reaver, segue o padrão de haver). 'Quando' pede futuro do subjuntivo: fizer."},
+
+{n:15,subj:"Língua Portuguesa",passage:false,text:'"A biografia dos poetas é revelada pelas palavras, pelos poemas que escrevem." (Myriam Fraga). Complete: "Trata-se de uma palavra de natureza ___ que introduz oração de valor ___ com sentido de ___ e pode ser substituída por \'___\'."',
+ opts:["Pronominal / adjetivo / explicação / cujos.","Pronominal / adjetivo / restrição / os quais.","Conjuntiva / adverbial / consequência / quantos.","Adjetiva / substantivo / finalidade / quem.","Conjuntiva / adverbial / causa / quais."],
+ correct:1, exp:"'Que' é pronome relativo (antecedido de 'poemas'), introduz oração adjetiva restritiva (sem vírgula) e pode ser substituído por 'os quais'."},
+
+/* HISTÓRIA DO RN */
+{n:16,subj:"História do RN",passage:false,text:"A ocupação inicial da Capitania do Rio Grande foi marcada por dificuldades que retardaram o processo de colonização portuguesa. Assinale a alternativa correta.",
+ opts:["A colonização enfrentou forte resistência dos povos potiguares, aliados aos franceses, fator que contribuiu para o fracasso inicial da administração dos donatários.","A Capitania destacou-se, desde o século XVI, como a mais próspera das capitanias hereditárias, graças à rápida lavoura açucareira.","A aliança entre portugueses e potiguares garantiu a ocupação pacífica, impedindo qualquer presença francesa.","A carta de doação estabelece com precisão seus limites territoriais, preservados integralmente até hoje.","A ocupação portuguesa ocorreu sem resistência indígena, dificultada apenas pela distância da metrópole."],
+ correct:0, exp:"Doada em 1534, a Capitania do Rio Grande sofreu forte resistência dos potiguares aliados aos franceses, o que retardou a colonização; a carta de doação original desapareceu, deixando os limites imprecisos."},
+
+{n:17,subj:"História do RN",passage:false,text:"A expansão da pecuária pelos sertões das Capitanias do Norte (2ª metade do séc. XVII ao início do XVIII) provocou transformações territoriais. Assinale a alternativa correta.",
+ opts:["A ocupação dos sertões foi pacífica, mediante tratados permanentes com todas as nações indígenas.","A expansão da pecuária ocorreu exclusivamente no litoral.","Os 'tapuias' apoiaram de forma unânime a ocupação portuguesa.","Os conflitos tiveram como principal causa jazidas de ouro, sem relação com a pecuária.","O avanço da pecuária para o interior ampliou a ocupação dos sertões e desencadeou conflitos com povos indígenas."],
+ correct:4, exp:"A expansão pecuária rumo aos sertões gerou confrontos com os povos genericamente chamados 'tapuias', no contexto da chamada Guerra dos Bárbaros."},
+
+{n:18,subj:"História do RN",passage:false,text:"Sobre o sistema fiscal colonial na Capitania do Rio Grande, assinale a alternativa correta.",
+ opts:["Os dízimos reais incidiam exclusivamente sobre ouro e diamantes.","Os dízimos reais correspondiam a um tributo de 10% incidente sobre diversas atividades produtivas (gado, açúcar, pescarias, lavouras).","A Provedoria do Rio Grande era responsável apenas pela administração militar.","O pagamento dos dízimos era facultativo, cobrado só de grandes proprietários de engenhos.","A arrecadação restringia-se ao comércio marítimo, sem impostos sobre a produção rural."],
+ correct:1, exp:"Os dízimos reais eram tributo obrigatório de 10% sobre várias atividades econômicas, arrecadados pela Provedoria do Rio Grande."},
+
+{n:19,subj:"História do RN",passage:false,text:"Sobre a fruticultura no Rio Grande do Norte, assinale a alternativa correta.",
+ opts:["O principal destaque é a produção de café, favorecida pelo clima úmido do interior.","A produção baseia-se em sistemas de sequeiro, voltados exclusivamente ao consumo local.","A agropecuária potiguar destaca-se como maior produtora e exportadora de melão do Brasil e líder nacional em melancia.","A fruticultura irrigada concentra-se exclusivamente na Região Metropolitana de Natal.","O RN possui participação pouco significativa na produção nacional de frutas."],
+ correct:2, exp:"O RN é o maior produtor/exportador brasileiro de melão e líder nacional em melancia, com fruticultura irrigada concentrada em Mossoró e Vale do Açu."},
+
+{n:20,subj:"História do RN",passage:false,text:"Sobre a atividade salineira potiguar, assinale a alternativa correta.",
+ opts:["O RN responde por cerca de 95% da produção brasileira de sal marinho, concentrada na Costa Branca.","A produção ocorre no litoral oriental, devido à elevada pluviosidade da Zona da Mata.","O principal fator é a existência de jazidas de sal-gema exploradas por mineração subterrânea.","A atividade salineira perdeu importância, restrita ao mercado local.","A produção está distribuída homogeneamente por todo o território, sem concentração regional."],
+ correct:0, exp:"O RN concentra ~95% da produção nacional de sal marinho na Costa Branca (Macau, Mossoró, Areia Branca, Grossos), obtido por evaporação (não mineração)."},
+
+/* ÉTICA */
+{n:21,subj:"Ética no Serviço Público",passage:false,text:"A criação de uma Comissão de Ética nos órgãos públicos é considerada boa prática porque:",
+ opts:["Contribui para prevenir desvios de comportamento.","Permite ao gestor aplicar punições diretas, sem apuração.","Elimina a necessidade de outras instâncias de controle interno.","Substitui as corregedorias no julgamento de infrações disciplinares.","Isenta os servidores de prestar contas à sociedade."],
+ correct:0, exp:"A Comissão de Ética tem caráter preventivo/educativo, orientando condutas e prevenindo desvios; não substitui corregedorias nem aplica sanções disciplinares diretamente."},
+
+{n:22,subj:"Ética no Serviço Público",passage:false,text:"Sobre a conduta profissional do servidor público, assinale a alternativa INCORRETA.",
+ opts:["O agente deve primar pela economicidade, buscando o melhor custo-benefício.","A atuação dos servidores deve refletir a consecução do bem coletivo comum.","No contexto atual, é necessário que o servidor seja patrimonialista, prezando pela moralidade e impessoalidade.","O servidor deve revestir-se do princípio da moralidade além do respeito à lei.","O servidor está sujeito ao princípio da legalidade, só podendo agir nos limites da lei."],
+ correct:2, exp:"O patrimonialismo (confusão entre patrimônio público e privado) é incompatível com a Administração Pública pós-1988; o servidor deve ser o oposto disso."},
+
+{n:23,subj:"Ética no Serviço Público",passage:false,text:"No serviço público, a função da Comissão de Ética Setorial é:",
+ opts:["Orientar os servidores sobre conduta ética e apurar possíveis desvios no órgão de atuação.","Elaborar políticas de segurança pública e repressão ao crime.","Autorizar a contratação de servidores temporários.","Gerir o orçamento dos ministérios e das secretarias.","Avaliar a execução orçamentária de programas de governo."],
+ correct:0, exp:"Caráter preventivo, consultivo e educativo: orientar e apurar desvios éticos no órgão em que atua."},
+
+{n:24,subj:"Ética no Serviço Público",passage:false,text:"A respeito das noções de ética e moral, assinale a alternativa correta.",
+ opts:["A moral possui natureza reflexiva e filosófica, enquanto a ética é o conjunto de comportamentos exigidos por uma comunidade.","A ética restringe-se às relações profissionais, e a moral disciplina apenas a vida privada.","A ética varia exclusivamente conforme os costumes de cada povo, enquanto a moral é permanente e imutável.","A observância da moral depende exclusivamente de sanção legal, ao contrário da ética.","A moral pode sofrer alterações ao longo do tempo, enquanto a ética analisa criticamente esses padrões de conduta e seus fundamentos."],
+ correct:4, exp:"Moral = conjunto de costumes/valores de uma sociedade, mutável historicamente. Ética = reflexão crítica sobre esses padrões."},
+
+{n:25,subj:"Ética no Serviço Público",passage:false,text:"Sobre ética, princípios e valores no exercício da função pública, assinale a alternativa correta.",
+ opts:["Os princípios éticos são facultativos ao agente público.","Os valores éticos possuem caráter exclusivamente individual.","A ética limita-se ao cumprimento das normas legais.","Os princípios éticos orientam a conduta do agente público, enquanto valores como honestidade e responsabilidade servem de referência para decisões e relacionamento com a sociedade.","Os valores éticos permanecem inalteráveis em qualquer contexto histórico ou social."],
+ correct:3, exp:"Princípios orientam a conduta; valores (honestidade, respeito, responsabilidade, integridade) servem de parâmetro para decisões e relação com a sociedade."},
+
+/* DIREITO CONSTITUCIONAL */
+{n:26,subj:"Direito Constitucional",passage:false,text:"A República Federativa do Brasil constitui-se em Estado Democrático de Direito e tem como fundamentos, EXCETO:",
+ opts:["A soberania.","A cidadania.","A dignidade da pessoa humana.","Os valores sociais do trabalho e da livre iniciativa.","Garantir o desenvolvimento nacional."],
+ correct:4, exp:"'Garantir o desenvolvimento nacional' é objetivo fundamental (art. 3º, II), não fundamento (art. 1º) da República."},
+
+{n:27,subj:"Direito Constitucional",passage:false,text:'A CF/88, conhecida como "Constituição Cidadã", marcou a redemocratização do país. Qual é uma das principais características dessa Constituição?',
+ opts:["Instituiu o regime parlamentarista no Brasil.","Reafirmou o voto exclusivo para homens alfabetizados.","Garantiu direitos fundamentais, como saúde, educação e moradia.","Estabeleceu o AI-5 como norma legal permanente.","Tornou a censura aos meios de comunicação obrigatória."],
+ correct:2, exp:"A CF/88 ampliou e consolidou direitos sociais (saúde, educação, moradia, etc.), rompendo com o regime autoritário anterior."},
+
+{n:28,subj:"Direito Constitucional",passage:false,text:'De acordo com o art. 5º da CF/88, a ação popular que vise anular ato lesivo ao patrimônio público, à moralidade administrativa, ao meio ambiente e ao patrimônio histórico e cultural pode ser proposta:',
+ opts:["Pelo IBAMA.","Pelos senadores e deputados.","Por qualquer cidadão.","Pelo Presidente da República.","Pelo Procurador Geral da República."],
+ correct:2, exp:"A ação popular é legitimada a qualquer cidadão (brasileiro nato ou naturalizado em pleno gozo dos direitos políticos), não a órgãos públicos ou autoridades em razão do cargo."},
+
+{n:29,subj:"Direito Constitucional",passage:false,text:"De acordo com o art. 5º da CF/88, todos são iguais perante a lei, EXCETO (assinale a alternativa incorreta/alterada):",
+ opts:["É assegurada, nos termos da lei, a assistência religiosa nas entidades civis e militares de internação coletiva.","Ninguém será privado de direitos por crença religiosa ou convicção política, ainda que as invocar para eximir-se de obrigação legal e recusar-se a cumprir prestação alternativa.","É livre a expressão da atividade intelectual, artística, científica e de comunicação, independentemente de censura ou licença.","É livre o exercício de qualquer trabalho, ofício ou profissão, atendidas as qualificações que a lei estabelecer.","É assegurado a todos o acesso à informação e resguardado o sigilo da fonte, quando necessário ao exercício profissional."],
+ correct:1, exp:"O texto correto é 'salvo se as invocar' (e não 'ainda que as invocar') — a alternativa alterou o sentido do dispositivo (art. 5º, VIII)."},
+
+{n:30,subj:"Direito Constitucional",passage:false,text:"Joana pretende seguir a carreira diplomática e um dos requisitos é que ela seja brasileira nata. Nesta situação, ela poderá ser:",
+ opts:["Nascida no estrangeiro, de pai brasileiro ou mãe brasileira, desde que qualquer deles esteja a serviço da República Federativa do Brasil.","Estrangeira de qualquer nacionalidade, residente no Brasil há mais de 15 anos ininterruptos e sem condenação penal.","Nascida no estrangeiro, mesmo que de pais estrangeiros, desde que qualquer deles esteja a serviço do Brasil.","Estrangeira, residente no Brasil há mais de 10 anos, desde que tenha requerido a nacionalidade brasileira.","Ter adquirido a nacionalidade brasileira, exigida aos originários de países de língua portuguesa apenas 3 meses de residência."],
+ correct:0, exp:"Só hipóteses de nacionalidade originária (nato) servem, já que diplomata é cargo privativo de brasileiro nato — art. 12, I, 'b', CF."},
+
+{n:31,subj:"Direito Constitucional",passage:false,text:"À luz da Constituição Federal, NÃO é um cargo privativo de brasileiro nato:",
+ opts:["Presidente da República.","Vice-Presidente da República.","Presidente da Câmara dos Deputados.","Ministro do Supremo Tribunal Federal.","Senador."],
+ correct:4, exp:"Senador não é privativo de nato (só o cargo de Presidente do Senado é). Os demais estão no rol do art. 12, §3º."},
+
+{n:32,subj:"Direito Constitucional",passage:false,text:"João pretende candidatar-se ao cargo de Governador de Estado. Para preencher uma das condições de elegibilidade, deverá possuir:",
+ opts:["Idade mínima de dezoito anos.","Idade mínima de vinte e um anos.","Idade mínima de trinta anos.","Idade mínima de trinta e cinco anos.","Idade mínima de trinta e cinco anos e máxima de 80 anos."],
+ correct:2, exp:"30 anos é a idade mínima para Governador/Vice-Governador (art. 14, §3º, VI, 'b'). Não há idade máxima prevista."},
+
+{n:33,subj:"Direito Constitucional",passage:false,text:"De acordo com a CF, compete privativamente ao Presidente da República:",
+ opts:["Sancionar, promulgar e fazer publicar as leis, bem como expedir decretos e regulamentos para sua fiel execução.","Elaborar o regimento interno da Câmara dos Deputados.","Eleger os membros do Conselho da República.","Aprovar a escolha dos chefes de missão diplomática de caráter permanente.","Dispor sobre limites e condições para concessão de garantia da União em operações de crédito."],
+ correct:0, exp:"Art. 84, IV. As demais são competências da Câmara (B, C) ou do Senado (D, E)."},
+
+{n:34,subj:"Direito Constitucional",passage:false,text:"Com relação ao Conselho Nacional de Justiça, assinale a alternativa correta.",
+ opts:["Compõe-se de 14 membros, mandato de 2 anos, vedada recondução.","Dois membros são cidadãos indicados pelo Senado Federal.","Compõe-se de 14 membros, mandato de 2 anos, admitida uma recondução.","É presidido pelo Presidente do STF e, em ausências, pelo Vice-Presidente do STF.","É presidido pelo Procurador-Geral da República."],
+ correct:3, exp:"O CNJ tem 15 membros (não 14), mandato de 2 anos com 1 recondução admitida, e é presidido pelo Presidente do STF."},
+
+{n:35,subj:"Direito Constitucional",passage:false,text:"De acordo com a CF/88, analise: (I) Às polícias militares cabem a polícia ostensiva e a preservação da ordem pública. (II) A polícia rodoviária federal destina-se ao patrulhamento ostensivo das rodovias federais. (III) Às polícias penais cabe a segurança dos estabelecimentos penais. Os itens são, respectivamente:",
+ opts:["F - V - V.","V - F - F.","V - F - V.","F - F - F.","V - V - V."],
+ correct:4, exp:"Todos os itens reproduzem corretamente o art. 144, §§2º, 5º e 5º-A da CF/88."},
+
+/* DIREITO ADMINISTRATIVO */
+{n:36,subj:"Direito Administrativo",passage:false,text:"Como são classificados os atos que visam a um único caso, específico, e que nele se encerram, como a nomeação ou concessão de férias a um servidor?",
+ opts:["Abstratos.","Complexos.","Compostos.","Concretos.","Simples."],
+ correct:3, exp:"Atos concretos disciplinam situação individual e determinada, exaurindo-se em um caso específico — exatamente o caso de nomeação/férias."},
+
+{n:37,subj:"Direito Administrativo",passage:false,text:'"O exercício, pelo chefe do Executivo, do poder de delegar certas atribuições que são de sua competência privativa." O conceito refere-se à:',
+ opts:["Imposição.","Desconcentração.","Sanção.","Descentralização.","Outorga."],
+ correct:1, exp:"Delegação de atribuições dentro da mesma pessoa jurídica, a autoridades subordinadas, é desconcentração administrativa."},
+
+{n:38,subj:"Direito Administrativo",passage:false,text:"São formas de provimento em cargo público, EXCETO:",
+ opts:["Aproveitamento.","Recondução.","Sorteio.","Reversão.","Reintegração."],
+ correct:2, exp:"Sorteio não é forma de provimento. As demais são formas derivadas de provimento."},
+
+{n:39,subj:"Direito Administrativo",passage:false,text:"A Prefeitura de Naviraí-MS desapropriou um imóvel central para construir um Centro Municipal de Educação Infantil, com indenização justa. A desapropriação encontra respaldo no princípio da:",
+ opts:["Indisponibilidade do serviço público.","Eficiência.","Supremacia do interesse público.","Continuidade dos serviços públicos.","Legalidade."],
+ correct:2, exp:"A desapropriação por utilidade/necessidade pública revela a prevalência do interesse público sobre o privado, mediante justa indenização."},
+
+{n:40,subj:"Direito Administrativo",passage:false,text:"A empresa em que Marcela trabalha foi autuada em processo administrativo. Assinale a alternativa INCORRETA.",
+ opts:["A decisão proferida pela autoridade julgadora é irrecorrível.","As provas ilícitas serão recusadas por decisão fundamentada.","Encerrada a instrução, a empresa terá direito de manifestar-se em alegações finais.","A decisão deverá ser motivada com indicação dos fatos e fundamentos jurídicos.","A empresa poderá oferecer defesa ou impugnação contra o auto de infração."],
+ correct:0, exp:"A decisão administrativa não é, em regra, irrecorrível — a Lei 9.784/99 assegura o direito de recurso administrativo (contraditório e ampla defesa)."},
+
+{n:41,subj:"Direito Administrativo",passage:false,text:"O Instituto de Meio Ambiente de Mato Grosso do Sul (IMASUL) é uma:",
+ opts:["Fundação pública.","Autarquia.","Sociedade de economia mista.","Sociedade anônima.","Cooperativa."],
+ correct:1, exp:"O IMASUL é autarquia estadual, integrante da Administração Indireta, com personalidade jurídica de direito público."},
+
+{n:42,subj:"Direito Administrativo",passage:false,text:"Sobre os instrumentos de planejamento e orçamento público previstos na CF, assinale a alternativa correta.",
+ opts:["A LOA estabelece, por 4 anos, diretrizes, objetivos e metas para despesas de capital.","A LDO substitui a LOA quando há equilíbrio fiscal.","O PPA possui vigência anual e fixa receitas e despesas do exercício seguinte.","A LDO orienta a elaboração da LOA, que estima a receita e fixa a despesa para cada exercício financeiro.","A LOA limita-se à previsão das receitas, cabendo à LDO fixar todas as despesas."],
+ correct:3, exp:"A LDO liga o PPA à LOA, orientando sua elaboração; a LOA estima receita e fixa despesa do exercício."},
+
+{n:43,subj:"Direito Administrativo",passage:false,text:"Sobre os bens públicos, assinale a alternativa correta.",
+ opts:["Os bens dominicais são insuscetíveis de alienação.","Os bens de uso comum do povo destinam-se exclusivamente à Administração.","Os bens de uso especial não possuem destinação pública específica.","Todos os bens públicos podem ser adquiridos por usucapião.","Os bens públicos classificam-se em bens de uso comum do povo, bens de uso especial e bens dominicais."],
+ correct:4, exp:"Classificação do art. 99 do Código Civil. Bens públicos (de qualquer categoria) são insuscetíveis de usucapião, e os dominicais podem ser alienados."},
+
+{n:44,subj:"Direito Administrativo",passage:false,text:"A respeito da responsabilidade civil do Estado, assinale a alternativa correta.",
+ opts:["Exige, em qualquer hipótese, comprovação de dolo ou culpa do agente.","O Estado responde objetivamente pelos danos causados por seus agentes, assegurado direito de regresso nos casos de dolo ou culpa.","A ação indenizatória deve ser proposta exclusivamente contra o agente público.","O direito de regresso independe de dolo ou culpa.","O Estado só responde se ficar demonstrada a culpa exclusiva da Administração."],
+ correct:1, exp:"Teoria do risco administrativo (art. 37, §6º CF): responsabilidade objetiva do Estado, com regresso contra o agente em caso de dolo/culpa."},
+
+{n:45,subj:"Direito Administrativo",passage:false,text:"Estado, governo e Administração Pública são institutos distintos, mas interdependentes. Assinale a alternativa correta.",
+ opts:["O Estado é formado pelos elementos povo, território e governo soberano.","Governo corresponde à execução direta e imediata dos serviços públicos.","Administração Pública e governo são expressões equivalentes.","O território é elemento exclusivo da Administração Pública.","O povo corresponde às pessoas temporariamente no território, independentemente de vínculo jurídico."],
+ correct:0, exp:"Estado = povo + território + governo soberano. Governo tem função política; Administração Pública, função administrativa (execução)."},
+
+/* DIREITOS HUMANOS */
+{n:46,subj:"Direitos Humanos",passage:false,text:"Considerando a teoria geral dos direitos humanos, assinale a alternativa correta.",
+ opts:["Os direitos humanos possuem caráter absoluto, sem qualquer limitação.","Destinam-se exclusivamente aos nacionais de cada Estado.","A historicidade demonstra que seu conteúdo permanece imutável.","A irrenunciabilidade impede o não exercício de um direito em situações específicas.","A universalidade significa que pertencem a todas as pessoas, sem distinção de nacionalidade, raça, sexo, religião ou qualquer outra condição."],
+ correct:4, exp:"Universalidade: direitos humanos pertencem a todas as pessoas pelo simples fato de serem humanas."},
+
+{n:47,subj:"Direitos Humanos",passage:false,text:"Considerando o processo histórico de evolução dos direitos humanos, assinale a alternativa correta.",
+ opts:["Surgiram integralmente após a Segunda Guerra Mundial.","A evolução ocorreu de forma gradual, marcada por documentos históricos e ampliação progressiva da proteção da dignidade humana.","A Declaração Universal foi o primeiro documento a reconhecer direitos inerentes à pessoa humana.","A proteção internacional tornou-se desnecessária após as constituições nacionais.","A evolução ocorreu de maneira uniforme em todos os países."],
+ correct:1, exp:"Evolução gradual e histórica (Magna Carta, Petição de Direitos, Bill of Rights etc.), culminando na consolidação do sistema internacional após 1945."},
+
+{n:48,subj:"Direitos Humanos",passage:false,text:"Com base na classificação das gerações (dimensões) dos direitos humanos, assinale a alternativa correta.",
+ opts:["Os de primeira geração voltam-se à proteção do meio ambiente e autodeterminação dos povos.","Os de segunda geração correspondem aos direitos civis e políticos.","Os de terceira geração destinam-se exclusivamente aos direitos trabalhistas.","Os de segunda geração compreendem direitos sociais, econômicos e culturais, exigindo atuação positiva do Estado.","As gerações substituem-se entre si, extinguindo direitos das gerações anteriores."],
+ correct:3, exp:"2ª geração = direitos sociais/econômicos/culturais, com exigência de prestação positiva do Estado. As gerações são cumulativas, não substitutivas."},
+
+{n:49,subj:"Direitos Humanos",passage:false,text:"A respeito da cidadania como fundamento da República, assinale a alternativa correta.",
+ opts:["Restringe-se ao exercício do direito de voto.","Compreende o exercício de direitos e deveres, permitindo participação ativa na vida política e social.","É atributo exclusivo dos ocupantes de cargos públicos.","Depende exclusivamente da capacidade civil plena, vedada participação antes dos 18 anos.","Limita-se à relação jurídica entre indivíduo e Estado, sem envolver a sociedade."],
+ correct:1, exp:"Cidadania vai além do voto: envolve direitos e deveres, participação social e política, controle social e defesa de interesses coletivos."},
+
+{n:50,subj:"Direitos Humanos",passage:false,text:"O combate à discriminação constitui pilar da proteção dos direitos humanos. Assinale a alternativa correta.",
+ opts:["O princípio da igualdade impõe o dever de combater práticas discriminatórias injustificadas, assegurando a todas as pessoas igual proteção e respeito.","A discriminação só configura violação quando praticada por agente público.","Tratamento diferenciado previsto em lei sempre caracteriza discriminação vedada.","A proibição da discriminação aplica-se exclusivamente às relações entre Estado e cidadão.","O combate à discriminação limita-se ao preconceito de raça ou cor."],
+ correct:0, exp:"O princípio da igualdade exige combate a qualquer discriminação arbitrária; ações afirmativas (tratamento diferenciado legítimo) não configuram discriminação ilícita."},
+
+{n:51,subj:"Direitos Humanos",passage:false,text:"A proteção dos grupos vulneráveis constitui eixo dos direitos humanos. Assinale a alternativa correta.",
+ opts:["Contraria o princípio da igualdade, por estabelecer tratamento diferenciado.","A vulnerabilidade decorre exclusivamente da situação econômica.","As medidas de proteção possuem caráter temporário, só em calamidade pública.","Busca reduzir desigualdades e assegurar o exercício efetivo dos direitos fundamentais por quem se encontra em maior vulnerabilidade.","Impede que a pessoa exerça plenamente sua autonomia, transferindo ao Estado todas as decisões."],
+ correct:3, exp:"A proteção de grupos vulneráveis concretiza a igualdade material, reduzindo desigualdades históricas sem retirar a autonomia da pessoa."},
+
+{n:52,subj:"Direitos Humanos",passage:false,text:"Acerca da dignidade da pessoa humana, assinale a alternativa correta.",
+ opts:["Aplica-se exclusivamente às relações entre o Estado e seus agentes.","Pode ser afastada sempre que houver interesse administrativo motivado.","Constitui fundamento da República e orienta a proteção dos direitos fundamentais.","Limita-se à proteção da integridade física.","Protege apenas os direitos expressamente previstos na CF."],
+ correct:2, exp:"Fundamento da República (art. 1º, III), com função interpretativa ampla sobre todo o ordenamento jurídico."},
+
+{n:53,subj:"Direitos Humanos",passage:false,text:"Sobre o uso da força pelos agentes de segurança pública, assinale a alternativa correta.",
+ opts:["O emprego da força é discricionário.","A arma de fogo é admitida sempre que houver desobediência a ordem legal.","O uso progressivo autoriza adoção imediata do meio mais gravoso.","A proporcionalidade aplica-se só a operações planejadas.","O uso da força deve ser limitado ao necessário, observando legalidade, necessidade, proporcionalidade e responsabilidade."],
+ correct:4, exp:"Uso da força deve ser proporcional e progressivo, restrito ao estritamente necessário para o objetivo legítimo da intervenção."},
+
+{n:54,subj:"Direitos Humanos",passage:false,text:"Sobre a vedação à tortura, assinale a alternativa correta.",
+ opts:["A tortura caracteriza-se pela imposição intencional de sofrimento físico ou mental, para obter informação, aplicar castigo, intimidar ou por discriminação, entre outras finalidades.","Configura tortura apenas conduta com lesões corporais graves ou permanentes.","Maus-tratos e tortura são figuras idênticas.","O crime de tortura só pode ser praticado por agente público.","Violência física em interrogatório é admitida para obter informações relevantes."],
+ correct:0, exp:"Tortura exige finalidade específica prevista em lei; não exige lesão física grave (sofrimento psíquico basta); pode ser praticada por qualquer pessoa."},
+
+{n:55,subj:"Direitos Humanos",passage:false,text:"Sobre a prevenção à tortura, assinale a alternativa correta.",
+ opts:["Restringe-se à apuração dos fatos após a violência.","Envolve medidas para impedir tratamentos cruéis, desumanos ou degradantes, incluindo fiscalização de locais de privação de liberdade.","A fiscalização compete exclusivamente ao Poder Judiciário.","Violência psicológica é admitida se houver interesse investigativo.","É atribuição exclusiva dos órgãos de segurança pública."],
+ correct:1, exp:"Prevenção é dever compartilhado, com fiscalização de locais de privação de liberdade e proteção da integridade física e psíquica."},
+
+/* EXECUÇÃO PENAL */
+{n:56,subj:"Execução Penal",passage:false,text:"De acordo com a LEP e a doutrina majoritária, assinale a alternativa correta sobre as finalidades da execução penal.",
+ opts:["Tem finalidade exclusiva de fiscalizar o cumprimento da pena.","As finalidades precípuas são a efetivação do mandamento da sentença e a reinserção social do condenado.","A reinserção social não constitui finalidade da execução penal.","Busca apenas assegurar os direitos do preso.","Limita-se às penas privativas de liberdade, sem abranger medidas de segurança."],
+ correct:1, exp:"Art. 1º da LEP: efetivar as disposições da sentença e proporcionar a harmônica integração social do condenado."},
+
+{n:57,subj:"Execução Penal",passage:false,text:"Sobre a natureza jurídica da execução penal: (I) exclusivamente jurisdicional (II) exclusivamente administrativa (III) complexa/mista, nas esferas administrativa e jurisdicional. Os itens são, respectivamente:",
+ opts:["F - F - V.","V - F - F.","F - V - F.","F - F - F.","F - V - V."],
+ correct:0, exp:"Prevalece a natureza complexa/mista da execução penal, com atuação conjunta do Judiciário e da Administração Penitenciária."},
+
+{n:58,subj:"Execução Penal",passage:false,text:"Relacione os princípios: (1) humanidade (2) personalidade/intranscendência da pena (3) individualização da pena — com: (__) a pena não passa da pessoa do autor; (__) veda tortura e tratamentos cruéis; (__) garante pena particularizada e inextensível. Ordem correta:",
+ opts:["3 - 2 - 1.","3 - 1 - 2.","2 - 1 - 3.","1 - 2 - 3.","2 - 3 - 1."],
+ correct:2, exp:"Personalidade/intranscendência (2) = não passa da pessoa; Humanidade (1) = veda tortura; Individualização (3) = pena particularizada."},
+
+{n:59,subj:"Execução Penal",passage:false,text:'De acordo com o art. 2º da LEP, "a jurisdição penal dos juízes ou tribunais da justiça ordinária será exercida no processo de execução...". Extrai-se que a execução penal também é regida pelo:',
+ opts:["Princípio da humanidade.","Princípio da isonomia.","Princípio da legalidade.","Princípio da jurisdicionalidade.","Princípio da responsabilidade penal subjetiva."],
+ correct:3, exp:"Princípio da jurisdicionalidade: a intervenção do Judiciário persiste durante toda a execução da pena, com todas as garantias do devido processo."},
+
+{n:60,subj:"Execução Penal",passage:false,text:"Consoante à LEP: (I) direitos não atingidos pela sentença ou lei são assegurados. (II) não haverá distinção racial, social, religiosa ou política. (III) a execução é atividade típica do Estado, vedada a cooperação da comunidade.",
+ opts:["Estão corretos os itens I, II e III.","Estão corretos apenas os itens I e II.","Estão corretos apenas os itens I e III.","Estão corretos apenas os itens II e III.","Todos os itens estão incorretos."],
+ correct:1, exp:"Itens I e II reproduzem a LEP (art. 3º). O item III é falso: o Estado deve recorrer à cooperação da comunidade (art. 4º)."},
+
+{n:61,subj:"Execução Penal",passage:false,text:"Nos termos da LEP, são espécies de assistência do preso e ao internado, EXCETO:",
+ opts:["Assistência material.","Assistência à saúde.","Assistência jurídica.","Assistência política.","Assistência religiosa."],
+ correct:3, exp:"A LEP prevê assistência material, à saúde, jurídica, educacional, social e religiosa — não há 'assistência política'."},
+
+{n:62,subj:"Execução Penal",passage:false,text:"De acordo com a LEP, a assistência material ao preso consistirá no fornecimento de:",
+ opts:["Alimentação, dinheiro em espécie e moradia.","Vestuário, medicamentos e educação.","Vestuário, assistência jurídica e instalações higiênicas.","Dinheiro em espécie, alimentação e assistência jurídica.","Alimentação, vestuário e instalações higiênicas."],
+ correct:4, exp:"Art. 12 da LEP: alimentação, vestuário e instalações higiênicas."},
+
+{n:63,subj:"Execução Penal",passage:false,text:"De acordo com a LEP, assinale a alternativa correta.",
+ opts:["A assistência à saúde compreende apenas atendimento médico e farmacêutico.","Se o estabelecimento não estiver aparelhado, a assistência médica será prestada em outro local, mediante autorização do Juízo da Execução.","O acompanhamento médico à mulher no pré-natal/pós-parto não é extensivo ao recém-nascido.","Será assegurado tratamento humanitário à mulher grávida nos atos médico-hospitalares e no puerpério, cabendo ao poder público a assistência integral à sua saúde e à do recém-nascido.","A assistência à saúde restringe-se ao próprio estabelecimento penal."],
+ correct:3, exp:"Art. 14, §4º da LEP. As demais erram: inclui odontológico, autorização é da direção do estabelecimento (não do Juízo), e é extensivo ao recém-nascido."},
+
+{n:64,subj:"Execução Penal",passage:false,text:"De acordo com a LEP: (I) assistência jurídica destinada a presos sem recursos financeiros; (II) em todos os estabelecimentos haverá local para atendimento pelo Defensor Público; (III) Núcleos Especializados da Defensoria serão implementados DENTRO dos estabelecimentos penais.",
+ opts:["V - V - V.","V - F - F.","V - V - F.","F - F - V.","F - F - F."],
+ correct:2, exp:"I e II corretos (arts. 15 e 16, §2º). III é falso: os Núcleos Especializados são implementados FORA dos estabelecimentos penais (art. 16, §3º)."},
+
+{n:65,subj:"Execução Penal",passage:false,text:"Acerca da assistência, com base na LEP, assinale a alternativa INCORRETA.",
+ opts:["A assistência estende-se ao egresso.","Entre as modalidades, estão a material e a jurídica.","O estabelecimento disporá de instalações e locais destinados à venda de produtos permitidos e não fornecidos pela Administração.","A assistência ao preso e ao internado é dever da família.","Será assegurado acompanhamento médico à mulher no pré-natal e pós-parto, extensivo ao recém-nascido."],
+ correct:3, exp:"A assistência é dever do ESTADO (art. 10 da LEP), não da família."},
+
+{n:66,subj:"Execução Penal",passage:false,text:"Acerca da assistência educacional, com base na LEP, assinale a alternativa correta.",
+ opts:["Cada estabelecimento terá uma biblioteca, provida de livros instrutivos, recreativos e didáticos.","O ensino superior será implantado nos presídios, em obediência à universalização constitucional.","A assistência educacional compreenderá unicamente a instrução escolar.","O censo penitenciário só apura o nível de escolaridade.","As atividades educacionais não podem ser objeto de convênio com entidades públicas ou particulares."],
+ correct:0, exp:"Art. 21 da LEP. É o ensino médio (não superior) que deve ser implantado; a assistência educacional inclui também formação profissional; convênios são permitidos."},
+
+{n:67,subj:"Execução Penal",passage:false,text:"De acordo com a LEP, é correto afirmar:",
+ opts:["Nenhum preso ou internado poderá ser obrigado a participar de atividade religiosa.","A critério do gestor, poderá ser destinado local para cultos religiosos.","A assistência religiosa é forma de ressocialização e indicativo para progressão de pena.","A posse de livros de instrução religiosa só é permitida nos locais de culto.","A atividade religiosa, com liberdade de culto, será obrigatória."],
+ correct:0, exp:"Art. 24, §2º da LEP: ninguém pode ser obrigado a participar de atividade religiosa (é direito, não obrigação)."},
+
+{n:68,subj:"Execução Penal",passage:false,text:"De acordo com a LEP, assinale a alternativa correta.",
+ opts:["O trabalho do condenado terá finalidade exclusivamente punitiva.","O trabalho do preso está sujeito ao regime da CLT.","O trabalho do preso será remunerado, mediante prévia tabela, não podendo ser inferior a três quartos do salário mínimo.","O produto da remuneração destina-se apenas ao ressarcimento ao Estado.","O condenado à pena privativa de liberdade não é obrigado a trabalhar."],
+ correct:2, exp:"Art. 29 da LEP: mínimo de 3/4 do salário mínimo. O trabalho tem finalidade educativa/produtiva, não CLT, e é obrigação do condenado (art. 31)."},
+
+{n:69,subj:"Execução Penal",passage:false,text:"Nos moldes da LEP: (I) para o preso provisório, o trabalho é obrigatório e só pode ser no interior do estabelecimento; (II) maiores de sessenta anos podem solicitar ocupação adequada à idade; (III) doentes/deficientes físicos só exercem atividades apropriadas ao seu estado.",
+ opts:["Estão corretos os itens I, II e III.","Estão corretos apenas os itens I e II.","Estão corretos apenas os itens I e III.","Estão corretos apenas os itens II e III.","Todos os itens estão incorretos."],
+ correct:3, exp:"Item I é falso: para o preso provisório, o trabalho NÃO é obrigatório (art. 31, parágrafo único). II e III estão corretos."},
+
+{n:70,subj:"Execução Penal",passage:false,text:"Nos moldes da LEP, assinale a alternativa INCORRETA:",
+ opts:["A jornada normal de trabalho não será inferior a quatro, nem superior a dez horas.","Poderá ser atribuído horário especial aos presos designados para conservação/manutenção do estabelecimento.","O trabalho externo será admissível a presos em regime fechado somente em serviço/obras públicas, com cautelas contra fuga.","A prestação de trabalho externo dependerá de aptidão, disciplina e responsabilidade, além do cumprimento de um sexto da pena.","Revogar-se-á a autorização de trabalho externo ao preso que praticar fato definido como crime ou for punido por falta grave."],
+ correct:0, exp:"A jornada correta é de no mínimo seis, no máximo oito horas (art. 33), não de quatro a dez."},
+
+/* LEGISLAÇÃO ESPECÍFICA */
+{n:71,subj:"Legislação Específica (Const. RN)",passage:false,text:"De acordo com a Constituição do Estado do RN, assinale a alternativa correta.",
+ opts:["A lei adota procedimento sumário de apuração de responsabilidade por desrespeito à integridade física e moral dos presos, cominando penas disciplinares ao servidor.","O Judiciário publica, anualmente, relação nominal dos presos.","Na elaboração dos regimentos participam apenas o Conselho Penitenciário e a OAB.","O prazo para exigir informações não atendidas é de 15 dias.","É permitido à administração estadual recusar fé a documentos públicos."],
+ correct:0, exp:"Art. 4º da Constituição Estadual. A publicação é semestral (não anual); participam também o órgão específico e o Juízo das Execuções; o prazo é de 10 dias; é vedado recusar fé a documentos."},
+
+{n:72,subj:"Legislação Específica (Const. RN)",passage:false,text:"Nos moldes da Constituição do RN, analise: (I) a bandeira; (II) o brasão de armas; (III) o hino; (IV) o selo estadual. São símbolos do Estado:",
+ opts:["I e II, apenas.","I, II e IV, apenas.","II, III e IV, apenas.","I, III e IV, apenas.","I, II e III, apenas."],
+ correct:4, exp:"Art. 12: bandeira, brasão de armas e hino. Não inclui selo estadual como símbolo do Estado."},
+
+{n:73,subj:"Legislação Específica (Const. RN)",passage:false,text:"À luz da Constituição do RN, são princípios institucionais da Defensoria Pública:",
+ opts:["Estabilidade, indivisibilidade e vitaliciedade.","Vitaliciedade, unidade e independência nacional.","Unidade, autonomia administrativa e independência funcional.","Unidade, indivisibilidade e independência funcional.","Estabilidade, hierarquia e independência funcional."],
+ correct:3, exp:"Art. 89, §4º: unidade, indivisibilidade e independência funcional."},
+
+{n:74,subj:"Legislação Específica (Const. RN)",passage:false,text:"Nos termos da Constituição do RN, assinale a alternativa correta.",
+ opts:["À Polícia Militar incumbe as funções de polícia judiciária e apuração de infrações penais.","À Polícia Penal Estadual, vinculada à Secretaria de Administração Penitenciária, cabe a segurança dos estabelecimentos penais.","A PM e o Corpo de Bombeiros ficam subordinados ao Secretário de Segurança Pública.","À Polícia Civil cabe o policiamento ostensivo e a preservação da ordem pública.","O Delegado de Polícia poderá residir em qualquer município, independentemente de autorização."],
+ correct:1, exp:"Art. 90, §13. Polícia judiciária é da Polícia Civil; PM/Bombeiros subordinam-se ao Governador; policiamento ostensivo é da PM; Delegado deve residir no município de lotação."},
+
+{n:75,subj:"Legislação Específica (Estatuto Pol. Penal RN)",passage:false,text:"O Estatuto da Carreira de Policial Penal do RN (LC nº 566/16) dispõe sobre:",
+ opts:["Regime previdenciário, estrutura da Secretaria, processo administrativo disciplinar e sanções disciplinares.","Garantias, direitos e deveres e sanções disciplinares.","Estrutura do cargo, sanções disciplinares e regime previdenciário.","Forma de ingresso, regime previdenciário e processo administrativo disciplinar.","Garantias, direitos e deveres, forma de ingresso, estrutura do cargo, forma de desenvolvimento na carreira e sistema de remuneração."],
+ correct:4, exp:"Art. 1º da LC 566/16, reproduzido literalmente na alternativa E."},
+
+{n:76,subj:"Legislação Específica (Estatuto Pol. Penal RN)",passage:false,text:"Nos moldes da LC 566/16, o Sistema Penitenciário Estadual integra o Sistema de Execução Penal auxiliando os Órgãos de Segurança Pública, com a finalidade de:",
+ opts:["Preservar a ordem pública.","Reprimir o tráfico ilícito de entorpecentes.","Contribuir para a proteção de todos os membros da sociedade mediante prestação de serviços de custódia de presos.","Exercer com exclusividade as funções de polícia judiciária.","Promover a ressocialização e assegurar a defesa social pela administração das unidades prisionais."],
+ correct:2, exp:"Art. 2º da LC 566/16, reprodução literal."},
+
+{n:77,subj:"Legislação Específica (Estatuto Pol. Penal RN)",passage:false,text:"À luz da LC 566/16, NÃO é um princípio institucional do Sistema Penitenciário do RN:",
+ opts:["Hierarquia funcional e disciplina.","Respeito à dignidade e aos direitos da pessoa humana, garantindo sua integridade física e moral.","Isenção de ânimos pessoais no exercício de suas funções.","Cumprir suas obrigações de maneira que inspirem respeito e exerçam influências benéficas nos internos.","Compromisso com os fins da Execução Penal à luz das leis disciplinadoras da matéria."],
+ correct:3, exp:"Essa é um DEVER do policial penal (art. 56, VI), não um princípio institucional do sistema (art. 3º)."},
+
+{n:78,subj:"Legislação Específica (Estatuto Pol. Penal RN)",passage:false,text:"São símbolos oficiais do Sistema Penitenciário do RN:",
+ opts:["A bandeira, o hino e o brasão de armas.","A bandeira, o brasão de armas e o selo.","O brasão, a bandeira e o distintivo.","O brasão, a arma e o distintivo.","O hino, o brasão e o distintivo."],
+ correct:2, exp:"Art. 4º da LC 566/16: o brasão, a bandeira e o distintivo."},
+
+{n:79,subj:"Legislação Específica (Estatuto Pol. Penal RN)",passage:false,text:"Para ingresso na categoria funcional das atividades penitenciárias, exigir-se-á do candidato, EXCETO:",
+ opts:["Ser brasileiro.","Ter, no mínimo, 18 anos e, no máximo, 55 anos de idade.","Estar quite com as obrigações eleitorais e militares.","Não registrar sentença penal condenatória transitada em julgado.","Estar em gozo dos direitos políticos."],
+ correct:1, exp:"O limite máximo correto é 45 anos (não 55) — art. 16, II da LC 566/16."},
+
+{n:80,subj:"Legislação Específica (Estatuto Pol. Penal RN)",passage:false,text:"Analise: (I) a hierarquização dá-se inicialmente apenas pelo cômputo de tempo de serviço público exclusivamente na carreira; (II) licença para trato de interesses particulares e afastamento sem remuneração p/ acompanhar cônjuge são computados como efetivo exercício; (III) faltas injustificadas, suspensão disciplinar e prisão por decisão judicial não são efetivo exercício para hierarquização.",
+ opts:["F - V - V.","V - F - F.","V - V - V.","V - F - V.","F - F - F."],
+ correct:3, exp:"I e III verdadeiros; II falso (essas licenças NÃO são computadas como efetivo exercício — art. 20, parágrafo único da LC 566/16)."},
+
+/* LC 122/94 */
+{n:81,subj:"Legislação Específica (LC 122/94)",passage:false,text:"De acordo com a LC nº 122/94, assinale a alternativa correta acerca dos conceitos nela previstos.",
+ opts:["Cargo público é o conjunto de classes da mesma profissão, diversificadas pelas atribuições, segundo complexidade e grau hierárquico.","Grupo é o agrupamento de cargos da mesma natureza e grau de responsabilidade, com igual padrão de vencimento.","Classe é o conjunto de todos os cargos de um Poder ou órgão equivalente.","Servidor é a pessoa legalmente investida em cargo público.","Quadro é o conjunto de cargos isolados e categorias funcionais correlatos, segundo a atividade ou conhecimentos exigidos."],
+ correct:3, exp:"Art. 2º, I. As demais trocam as definições entre si (a de A é categoria funcional; B é classe; C é quadro; E é grupo)."},
+
+{n:82,subj:"Legislação Específica (LC 122/94)",passage:false,text:"De acordo com a LC nº 122/94, NÃO constitui requisito para investidura em cargo público:",
+ opts:["Nacionalidade brasileira.","Gozo dos direitos políticos.","Quitação com as obrigações militares e eleitorais.","Aptidão física e mental, comprovada em inspeção médica oficial.","Idade mínima de 21 (vinte e um) anos."],
+ correct:4, exp:"A idade mínima exigida é de 18 anos (art. 7º, V), não 21."},
+
+{n:83,subj:"Legislação Específica (LC 122/94)",passage:false,text:"Nos termos da LC nº 122/94, assinale a alternativa correta.",
+ opts:["Em cada concurso, são reservadas, no máximo, 10% das vagas para PcD.","As pessoas com deficiência concorrem exclusivamente na lista geral.","Em casos especiais, é ilícita a realização de concurso específico adaptado às pessoas com deficiência.","Na hipótese de não se classificarem candidatos para todas as vagas, o saldo permanecerá vago.","A compatibilidade das atribuições do cargo com a deficiência é declarada por junta médica oficial, observado, se necessário, parecer de especialistas."],
+ correct:4, exp:"Art. 12, §4º. As demais erram: é NO MÍNIMO 10%; lista PRÓPRIA; concurso específico é LÍCITO; saldo REVERTE para os demais candidatos."},
+
+{n:84,subj:"Legislação Específica (LC 122/94)",passage:false,text:"Analise: (I) exercício é o ato gerador da investidura em cargo público; (II) é de 30 dias o prazo para o servidor entrar em exercício, contado da posse ou publicação do ato; (III) durante o estágio probatório, a aptidão é avaliada apenas quanto à assiduidade e pontualidade.",
+ opts:["F - V - F.","V - F - V.","V - V - V.","F - F - F.","F - F - V."],
+ correct:0, exp:"I é falso (é a POSSE, não o exercício, o ato gerador). II verdadeiro. III é falso: são 8 fatores avaliados, não só assiduidade/pontualidade."},
+
+{n:85,subj:"Legislação Específica (LC 122/94)",passage:false,text:"___ é a investidura de servidor ocupante de cargo efetivo em outro cargo de atribuições compatíveis com a limitação sofrida em sua capacidade física ou mental, verificada em inspeção de saúde. Assinale a alternativa que completa a lacuna.",
+ opts:["Reversão.","Readaptação.","Reintegração.","Recondução.","Aproveitamento."],
+ correct:1, exp:"Art. 24 da LC 122/94: essa é a definição exata de readaptação."},
+
+{n:86,subj:"Legislação Específica (LC 122/94)",passage:false,text:"Nos termos da LC nº 122/94, assinale a alternativa que NÃO constitui hipótese de vacância de cargo público.",
+ opts:["Exoneração.","Aposentadoria.","Aproveitamento.","Falecimento.","Readaptação."],
+ correct:2, exp:"Aproveitamento é forma de PROVIMENTO (retorno à atividade), não de vacância. As demais estão no art. 33."},
+
+{n:87,subj:"Legislação Específica (LC 122/94)",passage:false,text:"Nos termos da LC nº 122/94, assinale a alternativa correta.",
+ opts:["A remuneração compõe-se de vencimentos e indenizações.","A remuneração é devida desde a nomeação.","Os proventos de inatividade não se equiparam à remuneração.","A remuneração do cargo efetivo é irredutível.","A revisão geral aplica-se exclusivamente aos servidores civis."],
+ correct:3, exp:"Art. 41. É irredutível. As demais: compõe-se de vencimento+vantagens; devida pelo EFETIVO EXERCÍCIO; proventos SE EQUIPARAM à remuneração; revisão aplica-se também aos militares."},
+
+{n:88,subj:"Legislação Específica (LC 122/94)",passage:false,text:"Analise: (I) é vedada a suspensão do pagamento da remuneração do servidor preso preventivamente; (II) servidor suspenso preventivamente por alcance/malversação continuará percebendo normalmente sua remuneração, mesmo sem reposição imediata; (III) salvo por imposição legal ou mandado judicial, nenhum desconto incide sobre a remuneração.",
+ opts:["V - V - V.","F - F - V.","F - F - F.","V - F - F.","F - V - F."],
+ correct:1, exp:"I e II são falsos: a lei prevê exatamente a SUSPENSÃO do pagamento nessas hipóteses (art. 48). III é verdadeiro (art. 49)."},
+
+{n:89,subj:"Legislação Específica (LC 122/94)",passage:false,text:"De acordo com a LC nº 122/94, assinale a alternativa INCORRETA.",
+ opts:["O serviço extraordinário é remunerado com acréscimo de 25% da hora normal.","Só é permitido serviço extraordinário para situações excepcionais e temporárias, limite máximo de 2 horas por jornada.","O serviço noturno (22h às 5h) tem valor-hora acrescido de 25%, computando-se cada hora como 52min30s.","É devido, ao entrar em férias, adicional de 1/3 da remuneração do período, pago independentemente de solicitação.","O servidor faz jus a 30 dias de férias anuais, acumuláveis até 2 períodos, no caso de necessidade do serviço justificada."],
+ correct:0, exp:"O acréscimo correto do serviço extraordinário é de 50% (não 25%) — art. 80 da LC 122/94."},
+
+{n:90,subj:"Legislação Específica (LC 122/94)",passage:false,text:"Em consonância com a LC nº 122/94, o servidor pode ausentar-se para o exterior ou outros pontos do território nacional, sem perda da remuneração, para missão oficial, por prazo não superior a:",
+ opts:["01 (um) ano.","02 (dois) anos.","03 (três) anos.","04 (quatro) anos.","05 (cinco) anos."],
+ correct:3, exp:"Art. 108 da LC 122/94: prazo máximo de 4 anos."},
+
+/* DIREITO PENAL E PROCESSO PENAL */
+{n:91,subj:"Direito Penal e Processo Penal",passage:false,text:"Tendo por base a aplicação da lei penal e a classificação dos crimes, assinale a alternativa correta.",
+ opts:["Não há crime sem lei anterior que o defina, podendo haver pena sem prévia cominação legal.","Crime próprio é aquele que só pode ser praticado pela própria pessoa, por si mesma.","Considera-se praticado o crime no momento da ação ou omissão, ainda que outro seja o momento do resultado.","Não é aplicável a lei brasileira a crimes a bordo de aeronaves/embarcações estrangeiras privadas em pouso/porto no Brasil.","Crime material é aquele cujo resultado naturalístico é desnecessário para a consumação."],
+ correct:2, exp:"Art. 4º do CP — teoria da atividade quanto ao tempo do crime. As demais estão erradas ou invertidas."},
+
+{n:92,subj:"Direito Penal e Processo Penal",passage:false,text:"Não é um requisito do concurso de pessoas:",
+ opts:["Pluralidade de agentes.","Liame subjetivo.","Pluralidade de condutas.","União mínima de 4 (quatro) ou mais agentes.","Relevância causal das condutas."],
+ correct:3, exp:"Não existe exigência de número mínimo de agentes além de dois; os demais são requisitos reais do concurso de pessoas."},
+
+{n:93,subj:"Direito Penal e Processo Penal",passage:false,text:"Sobre a extinção da punibilidade, assinale a alternativa correta.",
+ opts:["Extingue-se a punibilidade, dentre outras situações, pela retratação do agente, nos casos em que a lei a admite.","Nos crimes conexos, a extinção da punibilidade de um deles impede a agravação da pena resultante da conexão.","A prescrição, antes do trânsito em julgado, verifica-se em trinta anos se o máximo da pena é superior a doze.","Extingue-se a punibilidade pela morte da vítima.","Não se aplicam às penas restritivas de direito os prazos de prescrição das privativas de liberdade."],
+ correct:0, exp:"Art. 107, VI do CP. As demais: extinção NÃO impede agravação da pena por conexão; prazo correto é 20 anos; é a morte do AGENTE (não da vítima); prazos SE APLICAM às restritivas de direito."},
+
+{n:94,subj:"Direito Penal e Processo Penal",passage:false,text:"Acerca dos crimes contra a Administração Pública, assinale a alternativa correta.",
+ opts:["O contrabando configura-se com iludir o pagamento de direito ou imposto devido pela entrada/saída/consumo de mercadoria.","A corrupção ativa necessita de oferecimento de dinheiro ao agente corrupto.","A configuração do crime de descumprimento de medidas protetivas de urgência independe da competência civil ou criminal do juiz que as deferiu.","Para a consumação da resistência, é obrigatório o uso de força física.","A usurpação de função pública sempre é apenada com reclusão e multa."],
+ correct:2, exp:"Art. 338-A, §1º do CP (incluído em 2025). As demais: contrabando é importar/exportar mercadoria PROIBIDA (isso é descaminho); vantagem pode ser não-econômica; resistência admite violência OU ameaça; usurpação simples é detenção+multa."},
+
+{n:95,subj:"Direito Penal e Processo Penal",passage:false,text:"Não é um crime hediondo, nos termos da Lei nº 8.072/90:",
+ opts:["Feminicídio.","Tráfico de pessoas cometido contra criança ou adolescente.","Vicaricídio.","Favorecimento da prostituição ou exploração sexual de criança/adolescente/vulnerável.","Corrupção ativa."],
+ correct:4, exp:"Corrupção ativa não consta no rol de crimes hediondos do art. 1º da Lei 8.072/90; os demais estão expressamente previstos."},
+
+{n:96,subj:"Direito Penal e Processo Penal",passage:false,text:"Em relação às características do inquérito policial, assinale a alternativa correta.",
+ opts:["Disponível.","Público.","Indispensável.","Inquisitorial.","Oral."],
+ correct:3, exp:"O IP é inquisitorial (sem contraditório/ampla defesa formal), sigiloso (não público), dispensável se o MP já tiver elementos, e escrito (não oral)."},
+
+{n:97,subj:"Direito Penal e Processo Penal",passage:false,text:"No que se refere ao inquérito policial, assinale a alternativa correta.",
+ opts:["O MP pode requerer a devolução do IP a qualquer tempo, para quaisquer diligências.","A autoridade policial pode mandar arquivar autos de inquérito.","Após arquivamento por falta de base, a autoridade policial não pode proceder a novas pesquisas mesmo com notícia de novas provas.","A autoridade assegurará no inquérito a ampla publicidade exigida pelo interesse da sociedade.","Do despacho que indeferir requerimento de abertura de inquérito caberá recurso para o chefe de Polícia."],
+ correct:4, exp:"Art. 5º, §2º do CPP. As demais: devolução só para diligências IMPRESCINDÍVEIS; autoridade policial NÃO pode arquivar; PODE reabrir com notícia de novas provas; assegura-se SIGILO, não publicidade ampla."},
+
+{n:98,subj:"Direito Penal e Processo Penal",passage:false,text:"Nos termos do CPP: (I) o início da cadeia de custódia dá-se com a preservação do local do crime ou detecção do vestígio; (II) a etapa que recolhe o vestígio para análise pericial chama-se 'reconhecimento'; (III) a coleta deve ser feita preferencialmente por perito oficial, mesmo quando necessária a realização de exames complementares; (IV) é proibida a entrada em locais isolados/remoção de vestígios antes da liberação do perito, sob pena de fraude processual.",
+ opts:["V – V – F – F.","F – V – V – F.","F – F – V – V.","V – F – V – V.","V – F – F – V."],
+ correct:3, exp:"I, III e IV são verdadeiros. II é falso: a etapa descrita chama-se 'coleta', não 'reconhecimento' (art. 158-A, IV)."},
+
+{n:99,subj:"Direito Penal e Processo Penal",passage:false,text:"Consoante aos princípios do processo penal, relacione: (1) Presunção de Inocência (2) Devido processo legal (3) Contraditório — com: (__) princípio regente, precedendo a justa punição do processo penal adequado; (__) direito de tomar conhecimento e rebater alegações e contrariar provas; (__) todo indivíduo é considerado inocente até sentença condenatória transitada em julgado.",
+ opts:["1 – 3 – 2.","2 – 3 – 1.","3 – 1 – 2.","2 – 1 – 3.","3 – 2 – 1."],
+ correct:1, exp:"Devido processo legal (2) = princípio regente; Contraditório (3) = conhecer/rebater alegações; Presunção de Inocência (1) = estado natural até trânsito em julgado."},
+
+{n:100,subj:"Direito Penal e Processo Penal",passage:false,text:"Durante patrulhamento, PMs foram acionados por populares que apontavam um homem fugindo de bicicleta após arrancar um celular de uma pedestre. Iniciaram perseguição ininterrupta e prenderam o suspeito três quarteirões depois, ainda com o objeto subtraído. Trata-se de hipótese de:",
+ opts:["Flagrante próprio.","Flagrante impróprio.","Flagrante forjado.","Flagrante esperado.","Flagrante presumido."],
+ correct:1, exp:"Flagrante impróprio (art. 302, III, CPP): perseguição + logo após + situação que faça presumir a autoria — os três requisitos estão presentes no caso."}
+];
+
+/* ============ APP LOGIC ============ */
+const answers = {}; // n -> index selected
+let graded = false;
+
+const root = document.getElementById('quizRoot');
+const subjects = [...new Set(Q.map(q=>q.subj))];
+
+function render(){
+  let html = '';
+  let lastSubj = null;
+  let passageInserted = false;
+  Q.forEach(q=>{
+    if(q.subj !== lastSubj){
+      html += `<div class="subject-div" data-subj="${q.subj}"><div class="line"></div><div class="label">${q.subj}</div><div class="line"></div></div>`;
+      lastSubj = q.subj;
+    }
+    if(q.passage && !passageInserted){
+      html += `<div class="passage" data-subj="${q.subj}"><h3>${PASSAGE.title}</h3><span class="author">${PASSAGE.author}</span>${PASSAGE.html}</div>`;
+      passageInserted = true;
+    }
+    html += renderQ(q);
+  });
+  root.innerHTML = html;
+  attachHandlers();
+  buildFilterBar();
+}
+
+function renderQ(q){
+  const letters=['A','B','C','D','E'];
+  let opts = q.opts.map((o,i)=>`<div class="opt" data-q="${q.n}" data-i="${i}"><span class="letter">${letters[i]}</span><span>${o}</span></div>`).join('');
+  return `<div class="q" id="q${q.n}" data-subj="${q.subj}">
+    <div class="q-head"><div class="q-num">${q.n}</div><div class="q-text">${q.text}</div></div>
+    <div class="opts">${opts}</div>
+    <div class="q-status" id="status${q.n}"></div>
+    <div class="explain" id="exp${q.n}"><b>Comentário:</b> ${q.exp}</div>
+  </div>`;
+}
+
+function attachHandlers(){
+  document.querySelectorAll('.opt').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      if(graded) return;
+      const n = +el.dataset.q, i = +el.dataset.i;
+      answers[n] = i;
+      document.querySelectorAll(`.opt[data-q="${n}"]`).forEach(o=>o.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById(`q${n}`).classList.add('answered');
+      updateProgress();
+    });
+  });
+}
+
+function updateProgress(){
+  const c = Object.keys(answers).length;
+  document.getElementById('progCount').textContent = c;
+  document.getElementById('progBar').style.width = (c/100*100)+'%';
+}
+
+function buildFilterBar(){
+  const bar = document.getElementById('filterBar');
+  let html = `<div class="chip active" data-f="all">Todas</div>`;
+  html += `<div class="chip" data-f="wrong">Erradas</div>`;
+  bar.innerHTML = html;
+  bar.querySelectorAll('.chip').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      bar.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      filterView(c.dataset.f);
+    });
+  });
+}
+
+function filterView(f){
+  document.querySelectorAll('.q, .subject-div, .passage').forEach(el=>el.classList.remove('hidden'));
+  if(f==='wrong'){
+    Q.forEach(q=>{
+      const el = document.getElementById(`q${q.n}`);
+      const isWrong = answers[q.n] !== q.correct;
+      if(!isWrong) el.classList.add('hidden');
+    });
+  }
+}
+
+document.getElementById('submitBtn').addEventListener('click', ()=>{
+  const totalAnswered = Object.keys(answers).length;
+  if(totalAnswered < 100){
+    const missing = 100 - totalAnswered;
+    if(!confirm(`Você ainda tem ${missing} questão(ões) em branco. Corrigir mesmo assim?`)) return;
+  }
+  grade();
+});
+
+function grade(){
+  graded = true;
+  let acertos=0, erros=0, brancos=0;
+  const bySubj = {};
+  Q.forEach(q=>{
+    bySubj[q.subj] = bySubj[q.subj] || {c:0,t:0};
+    bySubj[q.subj].t++;
+    const sel = answers[q.n];
+    const qEl = document.getElementById(`q${q.n}`);
+    const statusEl = document.getElementById(`status${q.n}`);
+    const expEl = document.getElementById(`exp${q.n}`);
+    expEl.classList.add('show');
+    document.querySelectorAll(`.opt[data-q="${q.n}"]`).forEach(o=>o.classList.add('disabled'));
+    const correctOpt = document.querySelector(`.opt[data-q="${q.n}"][data-i="${q.correct}"]`);
+    correctOpt.classList.add('correct-answer');
+    if(sel === undefined){
+      brancos++;
+      qEl.classList.add('incorrect');
+      statusEl.textContent = '— Em branco';
+    } else if(sel === q.correct){
+      acertos++; bySubj[q.subj].c++;
+      qEl.classList.add('correct');
+      statusEl.textContent = '✓ Correta';
+    } else {
+      erros++;
+      qEl.classList.add('incorrect');
+      statusEl.textContent = '✗ Incorreta';
+      const wrongOpt = document.querySelector(`.opt[data-q="${q.n}"][data-i="${sel}"]`);
+      if(wrongOpt) wrongOpt.classList.add('wrong-answer');
+    }
+  });
+
+  document.getElementById('submitZone').style.display='none';
+  document.getElementById('scorePct').textContent = acertos;
+  document.getElementById('scoreNote').textContent = `de 100 questões · ${acertos}%`;
+  document.getElementById('statAcertos').textContent = acertos;
+  document.getElementById('statErros').textContent = erros;
+  document.getElementById('statBrancos').textContent = brancos;
+
+  const sb = document.getElementById('subjectBreakdown');
+  sb.innerHTML = subjects.map(s=>{
+    const d = bySubj[s];
+    const pct = Math.round(d.c/d.t*100);
+    return `<div class="sb-row"><div class="sb-name">${s}</div><div class="sb-bar"><div class="sb-fill" style="width:${pct}%"></div></div><div class="sb-frac">${d.c}/${d.t}</div></div>`;
+  }).join('');
+
+  document.getElementById('resultScreen').classList.add('show');
+  document.getElementById('filterBar').classList.add('show');
+  window.scrollTo({top: document.getElementById('resultScreen').offsetTop - 100, behavior:'smooth'});
+}
+
+document.getElementById('reviewBtn').addEventListener('click', ()=>{
+  document.getElementById('filterBar').scrollIntoView({behavior:'smooth'});
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  location.reload();
+});
+
+render();
+updateProgress();
+</script>
+</body>
+</html>
